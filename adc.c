@@ -3,30 +3,94 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
+#define TRESHOLD 350 // 0.85V from 5.00V
+
+void performConvertingADC() {
+    ADCSRA |= (1<<ADSC); //ADSC: single convertion
+    while(ADCSRA & (1<<ADSC)) {
+        //wait for convertion finish
+    }
+}
+
+void handleADCInputs() {
+    // ADC0
+    ADMUX &=~ (1<<MUX0);
+    ADMUX &=~ (1<<MUX1);
+    ADMUX &=~ (1<<MUX2);
+    performConvertingADC();
+    
+    if (ADC < TRESHOLD) {
+        PORTB  &=~ (1<<PB0);
+    } else {
+        PORTB  |= (1<<PB0);
+    }
+    
+    // ADC1
+    ADMUX |= (1<<MUX0);
+    ADMUX &=~ (1<<MUX1);
+    ADMUX &=~ (1<<MUX2);
+    performConvertingADC();
+    
+    if (ADC < TRESHOLD) {
+        PORTB  &=~ (1<<PB1);
+    } else {
+        PORTB  |= (1<<PB1);
+    }
+    
+    // ADC2
+    ADMUX &=~ (1<<MUX0);
+    ADMUX |= (1<<MUX1);
+    ADMUX &=~ (1<<MUX2);
+    performConvertingADC();
+    
+    if (ADC < TRESHOLD) {
+        PORTB  &=~ (1<<PB2);
+    } else {
+        PORTB  |= (1<<PB2);
+    }
+    
+    // ADC3
+    ADMUX |= (1<<MUX0);
+    ADMUX |= (1<<MUX1);
+    ADMUX &=~ (1<<MUX2);
+    performConvertingADC();
+    
+    if (ADC < TRESHOLD) {
+        PORTB  &=~ (1<<PB3);
+    } else {
+        PORTB  |= (1<<PB3);
+    }
+    
+    // ADC4
+    ADMUX &=~ (1<<MUX0);
+    ADMUX &=~ (1<<MUX1);
+    ADMUX |= (1<<MUX2);
+    performConvertingADC();
+    
+    if (ADC < TRESHOLD) {
+        PORTB  &=~ (1<<PB4);
+    } else {
+        PORTB  |= (1<<PB4);
+    }
+}
+
+
 int main()
- { 
-    ADCSRA = (1<<ADEN) //ADEN: ADC Enable (uruchomienie przetwornika)  
-      |(1<<ADPS0)
-      |(1<<ADPS1)
-      |(1<<ADPS2); //ADPS2:0: ustawienie preskalera, preskaler= 128
+{
+    ADCSRA = (1<<ADEN) //ADEN: ADC Enable
+    |(1<<ADPS0)
+    |(1<<ADPS1)
+    |(1<<ADPS2); //ADPS2:0: prescaler at 128
     
-    ADMUX = (1<<REFS1) | (1<<REFS0) //REFS1:0: Reference Selection Bits
-    //Internal 2.56V Voltage Reference with external capacitor at AREF pin
-    |(1<<MUX2) | (1<<MUX0); //Input Channel Selections (ADC5 - Pin 5 )
+    //io settings
+    DDRA = 0x00; //All A pins as an input
+    DDRB = 0xFF; //All B pins as an output
     
-    //ustawienie wejœc/wyjœæ
-    DDRA = 0x00; //Ustawienie pinów ADC jako wejœcia
-    DDRB = 0xFF; //Ustawienie pinów steruj¹cych diodami jako wyjœcia
+    ADMUX = (1<<REFS1) | (1<<REFS0); //Init ADMUX with REFS
     
+    while (1) {
+        handleADCInputs();
+    }
     
-   while (1) {
-      ADCSRA |= (1<<ADSC); //ADSC: uruchomienie pojedynczej konwersji
-            
-      while(ADCSRA & (1<<ADSC)) {
-	 //czeka na zakoñczenie konwersji
-      }
-      
-      
-   }
-   return 0;
- }
+    return 0;
+}
