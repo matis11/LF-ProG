@@ -82,7 +82,7 @@ int main()
     |(1<<ADPS1)
     |(1<<ADPS2); //ADPS2:0: prescaler at 128
     
-    //io settings
+    //IO settings
     DDRA = 0x00; //All A pins as an input
     DDRB = 0xFF; //All B pins as an output
     
